@@ -10,7 +10,7 @@ from library_management import *
 m1 = User(2, "Munna", "Munna@gmail.com", "Munna127")
 m2 = User(3, "Biplob", "Biplob@gmail.com", "Biplob127")
 # m1.register()
-print(m1.verify("Munna@gmail@.com", "Munna126"))
+print(m1.verify("Munna@gmail.com", "Munna127"))
 
 # admin.add_book(b1)
 # admin.add_book(b2)

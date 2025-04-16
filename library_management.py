@@ -81,10 +81,13 @@ class User:
                 "SELECT email,password FROM members WHERE id =:id", {"id": self.id}
             )
             db_email, db_password = c.fetchone()
-            try:
-                if db_email == email and (hasher.verify(db_password, password)):
+            if db_email == email:
+                try:
+                    hasher.verify(db_password, password)
                     return True
-            except argon2.exceptions.VerifyMismatchError:
+                except argon2.exceptions.VerifyMismatchError:
+                    return False
+            else:
                 return False
 
     # user borrow and return book management
