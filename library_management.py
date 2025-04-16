@@ -364,12 +364,4 @@ class Library:
                 " ORDER BY active_user_counter DESC LIMIT 1"
             )
 
-            # c.execute(
-            #     "SELECT members.name,members.id,COUNT(borrowed_books.member_id) as no_of_active_user"
-            #     "FROM members"
-            #     " LEFT JOIN borrowed_books"
-            #     " ON members.id = borrowed_books.member_id"
-            #     " GROUP BY members.id "
-            #     "ORDER BY no_of_active_user DESC LIMIT 1 "
-            # )
             print(c.fetchall())
