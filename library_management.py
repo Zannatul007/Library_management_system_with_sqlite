@@ -126,6 +126,8 @@ class User:
                             },
                         )
                         print("Book is successfully borrowed by {}".format(self.name))
+                    else:
+                        print("There are no available copies of this book!")
             else:
                 print("Book doesn't exist in the library!")
 
@@ -340,9 +342,14 @@ class Library:
             c.execute("SELECT * FROM borrowed_books")
         print(c.fetchall())
 
-    # def show_most_borrowed_books(self):
-    #     with database:
-    #         c.execute(
-    #             "SELECT COUNT(book_isbn) FROM borrowed_books GROUP BY book_isbn ORDER BY COUNT(book_isbn) DESC"
-    #         )
-    #     print(c.fetchall())
+    def show_most_borrowed_books(self):
+        with database:
+            c.execute(
+                "SELECT books.title,books.isbn,COUNT(borrowed_books.book_isbn) as no_of_times_borrowed"
+                " FROM books"
+                " LEFT JOIN borrowed_books"
+                " ON borrowed_books.book_isbn = books.isbn"
+                " GROUP BY books.isbn"
+                " ORDER BY no_of_times_borrowed DESC LIMIT 1"
+            )
+        print(c.fetchall())
