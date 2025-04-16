@@ -365,3 +365,14 @@ class Library:
             )
 
             print(c.fetchall())
+
+    def total_no_books(self):
+        with database:
+            c.execute("SELECT SUM(copies) FROM books")
+            print("Total no of books in library {}".format(c.fetchone()[0]))
+
+    def total_no_users(self):
+        with database:
+            c.execute("SELECT id FROM members")
+
+            print("Total no of members in library {}".format(len(c.fetchall())))

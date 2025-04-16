@@ -31,6 +31,8 @@ library = Library("XYZ")
 
 library.show_most_borrowed_books()
 library.show_most_active_user()
+library.total_no_books()
+library.total_no_users()
 
 
 # admin.update_book(1,"DS")
