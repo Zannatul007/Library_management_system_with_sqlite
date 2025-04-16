@@ -27,7 +27,7 @@ m1.borrow_book(1, "---")
 m1.borrow_book(2, "---")
 m1.borrow_book(3, "---")
 m2.borrow_book(1, "---")
-library = Library("XYZ")
+library = Library()
 
 library.show_most_borrowed_books()
 library.show_most_active_user()

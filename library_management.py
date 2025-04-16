@@ -85,7 +85,10 @@ class User:
                 try:
                     hasher.verify(db_password, password)
                     return True
-                except argon2.exceptions.VerifyMismatchError:
+                except (
+                    argon2.exceptions.VerifyMismatchError
+                    or argon2.exceptions.InvalidHashError
+                ):
                     return False
             else:
                 return False
@@ -274,7 +277,7 @@ class Admin(User):
                         "id": user.id,
                         "name": user.name,
                         "email": user.email,
-                        "password": user.password,
+                        "password": user.get_hash(user.password),
                         "role": user.role,
                     },
                 )
@@ -324,8 +327,6 @@ class Admin(User):
 
 
 class Library:
-    def __init__(self, name):
-        self.name = name
 
     def show_all_books(self):
         with database:
@@ -352,7 +353,8 @@ class Library:
                 " GROUP BY books.isbn"
                 " ORDER BY no_of_times_borrowed DESC LIMIT 1"
             )
-        print(c.fetchall())
+            mostly_borrowed_book = c.fetchone()[0]
+        print("Mostly borrowed book is {}".format(mostly_borrowed_book))
 
     def show_most_active_user(self):
         with database:
@@ -364,7 +366,8 @@ class Library:
                 " ORDER BY active_user_counter DESC LIMIT 1"
             )
 
-            print(c.fetchall())
+            mostly_active_member = c.fetchone()[0]
+        print("Mostly active member is {}".format(mostly_active_member))
 
     def total_no_books(self):
         with database:
@@ -374,5 +377,10 @@ class Library:
     def total_no_users(self):
         with database:
             c.execute("SELECT id FROM members")
-
             print("Total no of members in library {}".format(len(c.fetchall())))
+
+    def usage_report(self):
+        self.total_no_books()
+        self.total_no_users()
+        self.show_most_borrowed_books()
+        self.show_most_active_user()
