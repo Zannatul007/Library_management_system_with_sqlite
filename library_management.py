@@ -9,17 +9,14 @@ c.execute(
 c.execute(
     "CREATE TABLE IF NOT EXISTS members(id INT PRIMARY KEY,password TEXT NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,role TEXT NOT NULL)"
 )
-
 c.execute(
     "CREATE TABLE IF NOT EXISTS borrowed_books(book_isbn INT NOT NULL, member_id INT NOT NULL,borrow_date TEXT,return_date TEXT,status TEXT NOT NULL,FOREIGN KEY (book_isbn) REFERENCES books(isbn),FOREIGN KEY (member_id) REFERENCES members(id))"
 )
 
 
 class BookStatus(Enum):
-    available = "Available"
     reserved = "Reserved"
     returned = "Returned"
-    not_available = "Not available"
 
 
 class Book:
@@ -29,7 +26,6 @@ class Book:
         self.author = author
         self.genre = genre
         self.copies = no_copies
-        # self.status = BookStatus.available
 
     def __str__(self):
         return " ISBN: {}\n Title: {}\n Author: {}\n Genre: {}\n Copies: {}".format(
@@ -46,71 +42,108 @@ class User:
         self.role = u_role
 
     def __str__(self):
+
         return " ID: {}\n Name: {}\n Email: {}\n Role: {}".format(
             self.id, self.name, self.email, self.role
         )
 
-    def borrow_book(self, book, borrow_date):
+    # user registration and verification
+    def register(self):
+        with database:
+            c.execute("SELECT * FROM members WHERE id=:id", {"id": self.id})
+            row = c.fetchone()
+            if row:
+                print("You have already an account. Please login!")
+            else:
+                c.execute(
+                    "INSERT INTO (id,name,email,password,role) VALUES (:id,:name,:email,:password,:role)",
+                    {
+                        "id": self.id,
+                        "name": self.name,
+                        "email": self.email,
+                        "password": self.password,
+                        "role": self.role,
+                    },
+                )
+                print("Registration is successful. Now you can log in to your account!")
+
+    def verify(self, email, password):
+        with database:
+            c.execute(
+                "SELECT email,password FROM members WHERE id =:id", {"id": self.id}
+            )
+            db_email, db_password = c.fetchone()
+            if db_email == email and db_password == password:
+                return True
+            else:
+
+                return False
+
+    # user borrow and return book management
+
+    def borrow_book(self, isbn, borrow_date):
         with database:
             c.execute(
                 "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id",
-                {"book_isbn": book.isbn, "member_id": self.id},
+                {"book_isbn": isbn, "member_id": self.id},
             )
             row = c.fetchone()
             if row:
                 print("The book is already borrowed by {}".format(self.name))
             else:
-                c.execute(
-                    "SELECT copies FROM books WHERE isbn =:isbn", {"isbn": book.isbn}
-                )
+
+                c.execute("SELECT copies FROM books WHERE isbn =:isbn", {"isbn": isbn})
                 row1 = c.fetchone()
                 copies = row1[0]
                 if copies > 0:
                     c.execute(
                         "UPDATE books SET copies=:copies WHERE isbn =:isbn",
-                        {"copies": copies - 1, "isbn": book.isbn},
+                        {"copies": copies - 1, "isbn": isbn},
                     )
                     c.execute(
                         "INSERT INTO borrowed_books (book_isbn,member_id,borrow_date,status) VALUES (:book_isbn,:member_id,:borrow_date,:status)",
                         {
-                            "book_isbn": book.isbn,
+                            "book_isbn": isbn,
                             "member_id": self.id,
                             "borrow_date": borrow_date,
                             "status": BookStatus.reserved.value,
                         },
                     )
+                    print("Book is successfully borrowed by {}".format(self.name))
 
-    def return_book(self, book, return_date):
+    def return_book(self, isbn, return_date):
         with database:
             c.execute(
-                "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id",
-                {"book_isbn": book.isbn, "member_id": self.id},
+                "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id AND status =:status",
+                {
+                    "book_isbn": isbn,
+                    "member_id": self.id,
+                    "status": BookStatus.reserved.value,
+                },
             )
             row = c.fetchone()
             if row:
-                c.execute(
-                    "SELECT copies FROM books WHERE isbn =:isbn ", {"isbn": book.isbn}
-                )
+                c.execute("SELECT copies FROM books WHERE isbn =:isbn ", {"isbn": isbn})
                 copies = c.fetchone()[0]
                 c.execute(
                     "UPDATE books SET copies=:copies WHERE isbn =:isbn",
-                    {"copies": copies + 1, "isbn": book.isbn},
+                    {"copies": copies + 1, "isbn": isbn},
                 )
                 c.execute(
                     "UPDATE borrowed_books SET return_date = :return_date,status =:status WHERE book_isbn = :book_isbn AND member_id = :member_id",
                     {
                         "return_date": return_date,
                         "status": BookStatus.returned.value,
-                        "book_isbn": book.isbn,
+                        "book_isbn": isbn,
                         "member_id": self.id,
                     },
                 )
+                print("Book is successfully returned by {}".format(self.name))
 
-                print("The book is already borrowed by {}".format(self.name))
             else:
-                print("Book is not borrowed")
+                print("Book is not borrowed by anyone")
 
-    def show_borrowed_books(self):
+    def show_books_transaction(self):
         with database:
             c.execute("SELECT * FROM borrowed_books")
         print(c.fetchall())
@@ -142,31 +175,23 @@ class Admin(User):
                     },
                 )
 
-    def update_book(self, book, title=None, copies=None):
+    def update_book(self, isbn, title=None, copies=None):
         if title:
             with database:
                 c.execute(
                     "UPDATE books SET title = :title WHERE isbn= :isbn",
-                    {"title": title, "isbn": book.isbn},
+                    {"title": title, "isbn": isbn},
                 )
         if copies:
             with database:
                 c.execute(
                     "UPDATE books SET copies=:copies WHERE isbn= :isbn",
-                    {"copies": copies, "isbn": book.isbn},
+                    {"copies": copies, "isbn": isbn},
                 )
 
-    def delete_book(self, book):
+    def delete_book(self, isbn):
         with database:
-            c.execute(
-                "SELECT * FROM books WHERE  title =:title AND author =:author",
-                {"title": book.title, "author": book.author},
-            )
-            row = c.fetchone()
-            if row is None:
-                print("Book doesn't exist in the library")
-            else:
-                c.execute("DELETE FROM books WHERE isbn = :isbn", {"isbn": book.isbn})
+            c.execute("DELETE FROM books WHERE isbn = :isbn", {"isbn": isbn})
 
     def search_book(self, isbn=None, title=None, author=None):
         if isbn:
@@ -193,12 +218,12 @@ class Admin(User):
     def add_member(self, user):
         with database:
             c.execute(
-                "SELECT * FROM members WHERE  name = :name AND email =:email",
-                {"name": user.name, "email": user.email},
+                "SELECT * FROM members WHERE  id =:id",
+                {"id": user.id},
             )
             row = c.fetchone()
             if row:
-                print("User is already exist in the library")
+                print("User already exists in the library")
             else:
                 c.execute(
                     "INSERT INTO members (id,name,email,password,role) VALUES(:id,:name,:email,:password,:role)",
@@ -210,38 +235,44 @@ class Admin(User):
                         "role": user.role,
                     },
                 )
+                print("User is successfully added to the library!")
 
-    def update_member(self, user, name=None, email=None, password=None):
-        if name:
-            with database:
-                c.execute(
-                    "UPDATE members SET name= :name WHERE id= :id",
-                    {"name": name, "id": user.id},
-                )
-        if email:
-            with database:
-                c.execute(
-                    "UPDATE members SET email= :email WHERE id= :id",
-                    {"email": email, "id": user.id},
-                )
-        if password:
-            with database:
-                c.execute(
-                    "UPDATE members SET password= :password WHERE id= :id",
-                    {"password": password, "id": user.id},
-                )
-
-    def delete_member(self, user):
+    def update_member(self, u_id, name=None, email=None, password=None):
         with database:
-            c.execute(
-                "SELECT * FROM members WHERE  name = :name AND email =:email",
-                {"name": user.name, "email": user.email},
-            )
+            c.execute("SELECT * FROM members WHERE id =:id", {"id": u_id})
             row = c.fetchone()
-            if row is None:
-                print("User doesn't exist in the library")
+        if row:
+            if name:
+                with database:
+                    c.execute(
+                        "UPDATE members SET name= :name WHERE id= :id",
+                        {"name": name, "id": u_id},
+                    )
+            if email:
+                with database:
+                    c.execute(
+                        "UPDATE members SET email= :email WHERE id= :id",
+                        {"email": email, "id": u_id},
+                    )
+            if password:
+                with database:
+                    c.execute(
+                        "UPDATE members SET password= :password WHERE id= :id",
+                        {"password": password, "id": u_id},
+                    )
+        else:
+            print("User doesn't exist in the library!")
+
+    def delete_member(self, u_id):
+
+        with database:
+            c.execute("SELECT * FROM members WHERE id =:id", {"id": u_id})
+            row = c.fetchone()
+            if row:
+                c.execute("DELETE FROM members WHERE id = :id", {"id": u_id})
+                print("User is removed successfully!")
             else:
-                c.execute("DELETE FROM members WHERE id = :id", {"id": user.id})
+                print("User doesn't exist in the library!")
 
     def show_members(self):
         with database:
@@ -263,7 +294,14 @@ class Library:
             c.execute("SELECT * FROM members")
         print(c.fetchall())
 
-    def show_all_borrowed_books(self):
+    def show_all_books_transactions(self):
         with database:
             c.execute("SELECT * FROM borrowed_books")
+        print(c.fetchall())
+
+    def show_most_borrowed_books(self):
+        with database:
+            c.execute(
+                "SELECT COUNT(book_isbn) FROM borrowed_books GROUP BY book_isbn ORDER BY COUNT(book_isbn) DESC"
+            )
         print(c.fetchall())
