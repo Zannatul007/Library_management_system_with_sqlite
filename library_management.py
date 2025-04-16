@@ -1,5 +1,8 @@
 import sqlite3
 from enum import Enum
+import argon2
+
+hasher = argon2.PasswordHasher()
 
 database = sqlite3.connect("library_management.sqlite")
 c = database.cursor()
@@ -48,6 +51,11 @@ class User:
         )
 
     # user registration and verification
+
+    def get_hash(self, password):
+        hashed_password = hasher.hash(password)
+        return hashed_password
+
     def register(self):
         with database:
             c.execute("SELECT * FROM members WHERE id=:id", {"id": self.id})
@@ -61,7 +69,7 @@ class User:
                         "id": self.id,
                         "name": self.name,
                         "email": self.email,
-                        "password": self.password,
+                        "password": self.get_hash(self.password),
                         "role": self.role,
                     },
                 )
@@ -73,10 +81,10 @@ class User:
                 "SELECT email,password FROM members WHERE id =:id", {"id": self.id}
             )
             db_email, db_password = c.fetchone()
-            if db_email == email and db_password == password:
-                return True
-            else:
-
+            try:
+                if db_email == email and (hasher.verify(db_password, password)):
+                    return True
+            except argon2.exceptions.VerifyMismatchError:
                 return False
 
     # user borrow and return book management
@@ -329,9 +337,9 @@ class Library:
             c.execute("SELECT * FROM borrowed_books")
         print(c.fetchall())
 
-    def show_most_borrowed_books(self):
-        with database:
-            c.execute(
-                "SELECT COUNT(book_isbn) FROM borrowed_books GROUP BY book_isbn ORDER BY COUNT(book_isbn) DESC"
-            )
-        print(c.fetchall())
+    # def show_most_borrowed_books(self):
+    #     with database:
+    #         c.execute(
+    #             "SELECT COUNT(book_isbn) FROM borrowed_books GROUP BY book_isbn ORDER BY COUNT(book_isbn) DESC"
+    #         )
+    #     print(c.fetchall())
