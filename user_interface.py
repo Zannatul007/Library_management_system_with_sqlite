@@ -45,18 +45,20 @@ while True:
         print("-----Welcome to the Library-----")
         while True:
 
-            print("1. Add book")
-            print("2. Remove Book")
-            print("3. Update Book")
-            print("4. Search Book")
-            print("5. Add User")
-            print("6. Remove User")
-            print("7. Update User")
-            print("8. Usage Report")
-            print("9. Export csv")
-            print("10. Logout")
+            print("1: Add book")
+            print("2: Remove Book")
+            print("3: Update Book")
+            print("4: Search Book")
+            print("5: Add User")
+            print("6: Remove User")
+            print("7: Update User")
+            print("8: Usage Report")
+            print("9: Export csv")
+            print("10: Show books")
+            print("11: Show member")
+            print("12: Logout")
 
-            admin_choice = int(input("Select a number from 1 to 10:  "))
+            admin_choice = int(input("Select a number from 1 to 12:  "))
 
             if admin_choice == 1:
                 book_isbn = int(input("Enter a book isbn: "))
@@ -72,12 +74,16 @@ while True:
             elif admin_choice == 3:
                 book_isbn = int(input("Enter a book isbn: "))
                 title = input("Press enter or type title: ")
-                copies = int(input("Press enter or type value: "))
+                copies = input("Press enter or no of copies: ")
+                if copies is not "":
+                    copies = int(copies)
                 admin.update_book(book_isbn, title, copies)
             elif admin_choice == 4:
-                book_isbn = int(input("Enter a book isbn: "))
+                book_isbn = input("Press enter or type a book isbn: ")
                 title = input("Press enter or type title: ")
-                author = int(input("Press enter or type author name: "))
+                author = input("Press enter or type author name: ")
+                if book_isbn is not "":
+                    book_isbn = int(book_isbn)
                 admin.search_book(book_isbn, title, author)
 
             elif admin_choice == 5:

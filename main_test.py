@@ -17,22 +17,71 @@ admin.add_book(b4)
 
 # admin.show_books()
 
-m1.borrow_book(1, "15-apr-25")
-m1.borrow_book(2, "16-apr-25")
-m1.return_book(1, "15-jan-25")
-m2.borrow_book(1, "15-june-2025")
+# admin.add_member(m1)
+# admin.add_member(m2)
 
-admin.add_member(m1)
-admin.add_member(m2)
-# m1.show_borrowed_books()
+# admin.show_members()
+
+# admin.update_book(1,"DS")
+# book_isbn = input("Press enter or type a book isbn: ")
+# print(book_isbn)
+# title = input("Press enter or type title: ")
+# copies = input("Press enter or no of copies: ")
+# if book_isbn is not "":
+#     book_isbn = int(book_isbn)
+# if copies is not "":
+#     copies = int(copies)
+
+# admin.delete_book(6)
+# admin.delete_book(1)
 # admin.show_books()
 
-library = Library("XYZ")
-print("ALL BOOKS")
-library.show_all_books()
-print("ALL BORROWED BOOKS")
-library.show_all_borrowed_books()
-print("ALL Members")
-library.show_all_members()
-print("SHOW MOST BORROWED BOOKS")
-library.show_most_borrowed_books()
+# book_isbn = int(input("Enter a book isbn: "))
+# title = input("Press enter or type title: ")
+# copies = input("Press enter or no of copies: ")
+# if copies is not "":
+#     copies = int(copies)
+# admin.update_book(book_isbn, title, copies)
+# admin.show_books()
+
+# admin.search_book(2)
+
+book_isbn = input("Press enter or type a book isbn: ")
+title = input("Press enter or type title: ")
+author = input("Press enter or type author name: ")
+if book_isbn is not "":
+    book_isbn = int(book_isbn)
+admin.search_book(book_isbn, title, author)
+
+# m1.register()
+# print(m1.verify("Munna@gmail.com", "Munna127"))
+# m1.borrow_book(2, "15-apr-24")
+# m1.return_book(2, "18-Apr-24")
+# m1.show_books_transaction()
+# admin.add_member(m2)
+# m2.borrow_book(2, "15-apr-25")
+# m2.return_book(2, "25-apr-25")
+# m2.show_books_transaction()
+
+# admin.show_books()
+
+
+# m1.borrow_book(1, "15-apr-25")
+# m1.borrow_book(2, "16-apr-25")
+# m1.return_book(1, "15-jan-25")
+# m2.borrow_book(1, "15-june-2025")
+
+# admin.add_member(m1)
+# admin.add_member(m2)
+# # m1.show_borrowed_books()
+# # admin.show_books()
+
+# library = Library("XYZ")
+# print("ALL BOOKS")
+# library.show_all_books()
+# print("ALL BORROWED BOOKS")
+# library.show_all_borrowed_books()
+# print("ALL Members")
+# library.show_all_members()
+# print("SHOW MOST BORROWED BOOKS")
+# library.show_most_borrowed_books()

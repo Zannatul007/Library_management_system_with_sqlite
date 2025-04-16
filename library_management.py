@@ -56,7 +56,7 @@ class User:
                 print("You have already an account. Please login!")
             else:
                 c.execute(
-                    "INSERT INTO (id,name,email,password,role) VALUES (:id,:name,:email,:password,:role)",
+                    "INSERT INTO members (id,name,email,password,role) VALUES (:id,:name,:email,:password,:role)",
                     {
                         "id": self.id,
                         "name": self.name,
@@ -83,33 +83,40 @@ class User:
 
     def borrow_book(self, isbn, borrow_date):
         with database:
-            c.execute(
-                "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id",
-                {"book_isbn": isbn, "member_id": self.id},
-            )
-            row = c.fetchone()
-            if row:
-                print("The book is already borrowed by {}".format(self.name))
-            else:
+            c.execute("SELECT * FROM books where isbn =:isbn", {"isbn": isbn})
+            book = c.fetchone()
+            if book:
+                c.execute(
+                    "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id",
+                    {"book_isbn": isbn, "member_id": self.id},
+                )
+                row = c.fetchone()
+                if row:
+                    print("The book is already borrowed by {}".format(self.name))
+                else:
 
-                c.execute("SELECT copies FROM books WHERE isbn =:isbn", {"isbn": isbn})
-                row1 = c.fetchone()
-                copies = row1[0]
-                if copies > 0:
                     c.execute(
-                        "UPDATE books SET copies=:copies WHERE isbn =:isbn",
-                        {"copies": copies - 1, "isbn": isbn},
+                        "SELECT copies FROM books WHERE isbn =:isbn", {"isbn": isbn}
                     )
-                    c.execute(
-                        "INSERT INTO borrowed_books (book_isbn,member_id,borrow_date,status) VALUES (:book_isbn,:member_id,:borrow_date,:status)",
-                        {
-                            "book_isbn": isbn,
-                            "member_id": self.id,
-                            "borrow_date": borrow_date,
-                            "status": BookStatus.reserved.value,
-                        },
-                    )
-                    print("Book is successfully borrowed by {}".format(self.name))
+                    row1 = c.fetchone()
+                    copies = row1[0]
+                    if copies > 0:
+                        c.execute(
+                            "UPDATE books SET copies=:copies WHERE isbn =:isbn",
+                            {"copies": copies - 1, "isbn": isbn},
+                        )
+                        c.execute(
+                            "INSERT INTO borrowed_books (book_isbn,member_id,borrow_date,status) VALUES (:book_isbn,:member_id,:borrow_date,:status)",
+                            {
+                                "book_isbn": isbn,
+                                "member_id": self.id,
+                                "borrow_date": borrow_date,
+                                "status": BookStatus.reserved.value,
+                            },
+                        )
+                        print("Book is successfully borrowed by {}".format(self.name))
+            else:
+                print("Book doesn't exist in the library!")
 
     def return_book(self, isbn, return_date):
         with database:
@@ -140,12 +147,12 @@ class User:
                 )
                 print("Book is successfully returned by {}".format(self.name))
 
-            else:
-                print("Book is not borrowed by anyone")
-
     def show_books_transaction(self):
         with database:
-            c.execute("SELECT * FROM borrowed_books")
+            c.execute(
+                "SELECT * FROM borrowed_books WHERE member_id = :member_id",
+                {"member_id": self.id},
+            )
         print(c.fetchall())
 
 
@@ -157,8 +164,8 @@ class Admin(User):
     def add_book(self, book):
         with database:
             c.execute(
-                "SELECT * FROM books WHERE  title =:title AND author =:author",
-                {"title": book.title, "author": book.author},
+                "SELECT * FROM books WHERE  isbn =:isbn",
+                {"isbn": book.isbn},
             )
             row = c.fetchone()
             if row:
@@ -174,39 +181,62 @@ class Admin(User):
                         "copies": book.copies,
                     },
                 )
+                print("Book is successfully added to the library!")
 
     def update_book(self, isbn, title=None, copies=None):
-        if title:
-            with database:
-                c.execute(
-                    "UPDATE books SET title = :title WHERE isbn= :isbn",
-                    {"title": title, "isbn": isbn},
-                )
-        if copies:
-            with database:
-                c.execute(
-                    "UPDATE books SET copies=:copies WHERE isbn= :isbn",
-                    {"copies": copies, "isbn": isbn},
-                )
+        with database:
+            c.execute(
+                "SELECT * FROM books WHERE  isbn =:isbn",
+                {"isbn": isbn},
+            )
+            row = c.fetchone()
+        if row:
+            if title:
+                with database:
+                    c.execute(
+                        "UPDATE books SET title = :title WHERE isbn= :isbn",
+                        {"title": title, "isbn": isbn},
+                    )
+            if copies:
+                with database:
+                    c.execute(
+                        "UPDATE books SET copies=:copies WHERE isbn= :isbn",
+                        {"copies": copies, "isbn": isbn},
+                    )
+        else:
+            print("Book doesn't exist in the library!")
 
     def delete_book(self, isbn):
         with database:
-            c.execute("DELETE FROM books WHERE isbn = :isbn", {"isbn": isbn})
+            c.execute(
+                "SELECT * FROM books WHERE  isbn =:isbn",
+                {"isbn": isbn},
+            )
+            row = c.fetchone()
+            if row:
+
+                c.execute("DELETE FROM books WHERE isbn = :isbn", {"isbn": isbn})
+                print("Book is deleted successfully!")
+            else:
+                print("Book doesn't exist in the library!")
 
     def search_book(self, isbn=None, title=None, author=None):
         if isbn:
             with database:
                 c.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn})
+            print("Book details of ISBN {}".format(isbn))
             print(c.fetchone())
         if title:
             with database:
                 c.execute("SELECT * FROM books WHERE title = :title", {"title": title})
+            print("Book details of title {}".format(title))
             print(c.fetchone())
         if author:
             with database:
                 c.execute(
                     "SELECT * FROM books WHERE author = :author", {"author": author}
                 )
+            print("All books of author {}".format(author))
             print(c.fetchall())
 
     def show_books(self):
