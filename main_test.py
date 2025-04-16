@@ -1,19 +1,19 @@
 from library_management import *
 
 
-b1 = Book(1, "CS", "Zannatul", "CSE", 20)
-b2 = Book(2, "CS2", "Zannatul", "CSE", 30)
-b3 = Book(3, "CS3", "Zannatul", "CSE", 40)
-b4 = Book(4, "CS4", "Zannatul", "CSE", 50)
+# b1 = Book(1, "CS", "Zannatul", "CSE", 20)
+# b2 = Book(2, "CS2", "Zannatul", "CSE", 30)
+# b3 = Book(3, "CS3", "Zannatul", "CSE", 40)
+# b4 = Book(4, "CS4", "Zannatul", "CSE", 50)
 
-admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
-m1 = User(2, "Munna", "Munna@gmail.com", "Munna127")
-m2 = User(3, "Biplob", "Biplob@gmail.com", "Biplob127")
+# admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
+# m1 = User(2, "Munna", "Munna@gmail.com", "Munna127")
+# m2 = User(3, "Biplob", "Biplob@gmail.com", "Biplob127")
 
-admin.add_book(b1)
-admin.add_book(b2)
-admin.add_book(b3)
-admin.add_book(b4)
+# admin.add_book(b1)
+# admin.add_book(b2)
+# admin.add_book(b3)
+# admin.add_book(b4)
 
 # admin.show_books()
 
@@ -46,12 +46,12 @@ admin.add_book(b4)
 
 # admin.search_book(2)
 
-book_isbn = input("Press enter or type a book isbn: ")
-title = input("Press enter or type title: ")
-author = input("Press enter or type author name: ")
-if book_isbn is not "":
-    book_isbn = int(book_isbn)
-admin.search_book(book_isbn, title, author)
+# book_isbn = input("Press enter or type a book isbn: ")
+# title = input("Press enter or type title: ")
+# author = input("Press enter or type author name: ")
+# if book_isbn is not "":
+#     book_isbn = int(book_isbn)
+# admin.search_book(book_isbn, title, author)
 
 # m1.register()
 # print(m1.verify("Munna@gmail.com", "Munna127"))
@@ -85,3 +85,12 @@ admin.search_book(book_isbn, title, author)
 # library.show_all_members()
 # print("SHOW MOST BORROWED BOOKS")
 # library.show_most_borrowed_books()
+import hashlib
+
+hash_object = hashlib.sha512()
+hash_object.update(b"Hello world")
+hex_digit = hash_object.hexdigest()
+print(hex_digit)
+
+
+print(hex_digit == hex_digit)
