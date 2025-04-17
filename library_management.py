@@ -459,7 +459,7 @@ def load_borrowed_books():
             print("-" * 20)
 
 
-load_books()
+# load_books()
 # library = Library()
 # library.show_all_books()
 # library.show_all_members()

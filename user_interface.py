@@ -11,7 +11,7 @@ while True:
         email = input("Enter your email: ")
         password = input("Enter your password: ")
 
-        user = User( name, email, password)
+        user = User(name, email, password)
         if user.verify(email, password):
             while True:
                 print("1: Borrow book")
@@ -125,7 +125,6 @@ while True:
                     print("GENERATING REPORT")
                     library.usage_report()
                 elif admin_choice == 9:
-                    
                     print("ALL BOOKS")
                     library.show_all_books()
                 elif admin_choice == 10:
@@ -137,12 +136,11 @@ while True:
             print("Incorrect password or email!!")
 
     elif choice == 3:
-        
+
         name = input("Enter your name: ")
         email = input("Enter your email: ")
         password = input("Enter your password: ")
-        role = input("Enter the role Member/Admin: ")
-        user = User( name, email, password, role)
+        user = User(name, email, password)
         user.register()
     else:
         break
