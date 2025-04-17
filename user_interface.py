@@ -102,11 +102,10 @@ while True:
 
                 elif admin_choice == 5:
                     print("ADDING MEMBER")
-                    u_id = input("Enter user id: ")
                     name = input("Enter user name: ")
                     email = input("Enter user email: ")
                     password = input("Enter user password: ")
-                    user = User(u_id, name, email, password)
+                    user = User(name, email, password)
                     admin.add_member(user)
 
                 elif admin_choice == 6:

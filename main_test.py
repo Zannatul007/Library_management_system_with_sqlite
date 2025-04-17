@@ -1,26 +1,25 @@
 from library_management import *
 
 
-b1 = Book(1, "CS", "Zannatul", "CSE", 20)
-print(b1)
-b2 = Book(2, "CS2", "Zannatul", "CSE", 30)
-b3 = Book(3, "CS3", "Zannatul", "CSE", 40)
-b4 = Book(4, "CS4", "Zannatul", "CSE", 50)
-admin = Admin("Sabbir", "sabbir@gmail.com", "sabbir123")
-admin.register()
-admin.add_book(b1)
-admin.add_book(b2)
+# b1 = Book(1, "CS", "Zannatul", "CSE", 20)
+# print(b1)
+# b2 = Book(2, "CS2", "Zannatul", "CSE", 30)
+# b3 = Book(3, "CS3", "Zannatul", "CSE", 40)
+# b4 = Book(4, "CS4", "Zannatul", "CSE", 50)
+# admin = Admin("Sabbir", "sabbir@gmail.com", "sabbir123")
+# admin.register()
+# admin.add_book(b1)
+# admin.add_book(b2)
 
-# admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
-m1 = User("Munna", "Munna@gmail.com", "Munna127")
-m2 = User("Biplob", "Biplob@gmail.com", "Biplob127")
-admin.add_member(m1)
-admin.add_member(m2)
+# # admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
+# m1 = User("Munna", "Munna@gmail.com", "Munna127")
+# m2 = User("Biplob", "Biplob@gmail.com", "Biplob127")
+# admin.add_member(m1)
+# admin.add_member(m2)
 
-library = Library()
-library.show_all_members()
+# library = Library()
+# library.show_all_members()
 
-m1.borrow_book(1,)
 # m1.register()
 # print(m1.verify("Munna@gmail.com", "Munna127"))
 
@@ -130,3 +129,4 @@ import argon2
 # new_pass = b"Zannatul123"
 # hasher.verify(hashed_password,new_pass)
 # print("pass word correct")
+load_books()

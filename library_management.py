@@ -88,8 +88,9 @@ class User:
                 print("You have already an account. Please login!")
             else:
                 c.execute(
-                    "INSERT INTO members (name,email,password,role) VALUES (:name,:email,:password,:role)",
+                    "INSERT INTO members (id,name,email,password,role) VALUES (:id,:name,:email,:password,:role)",
                     {
+                        "id": self.id,
                         "name": self.name,
                         "email": self.email,
                         "password": self.get_hash(self.password),
@@ -268,19 +269,28 @@ class Admin(User):
             with database:
                 c.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn})
             print("Book details of ISBN {}".format(isbn))
-            print(c.fetchone())
+            isbn, title, author, genre, copies, status = c.fetchone()
+            new_book = Book(isbn, title, author, genre, copies)
+            print(new_book)
+
         if title:
             with database:
                 c.execute("SELECT * FROM books WHERE title = :title", {"title": title})
             print("Book details of title {}".format(title))
-            print(c.fetchone())
+            isbn, title, author, genre, copies, status = c.fetchone()
+            new_book = Book(isbn, title, author, genre, copies)
+            print(new_book)
         if author:
             with database:
                 c.execute(
                     "SELECT * FROM books WHERE author = :author", {"author": author}
                 )
             print("All books of author {}".format(author))
-            print(c.fetchall())
+            books = c.fetchall()
+            for book in books:
+                isbn, title, author, genre, copies, status = book
+                new_book = Book(isbn, title, author, genre, copies)
+                print(new_book)
 
     def show_books(self):
         with database:
@@ -299,8 +309,9 @@ class Admin(User):
                 print("User already exists in the library")
             else:
                 c.execute(
-                    "INSERT INTO members (name,email,password,role) VALUES(:name,:email,:password,:role)",
+                    "INSERT INTO members (id,name,email,password,role) VALUES(:id,:name,:email,:password,:role)",
                     {
+                        "id": user.id,
                         "name": user.name,
                         "email": user.email,
                         "password": user.get_hash(user.password),
@@ -409,7 +420,8 @@ def load_books():
         print("-" * 20)
         books = c.fetchall()
         for book in books:
-            isbn, title, author, genre, no_copies = book
+            print(book)
+            isbn, title, author, genre, no_copies, status = book
             new_book = Book(isbn, title, author, genre, no_copies)
             print(new_book)
             print("-" * 20)
@@ -447,6 +459,7 @@ def load_borrowed_books():
             print("-" * 20)
 
 
+load_books()
 # library = Library()
 # library.show_all_books()
 # library.show_all_members()
