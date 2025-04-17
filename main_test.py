@@ -2,37 +2,49 @@ from library_management import *
 
 
 b1 = Book(1, "CS", "Zannatul", "CSE", 20)
+print(b1)
 b2 = Book(2, "CS2", "Zannatul", "CSE", 30)
 b3 = Book(3, "CS3", "Zannatul", "CSE", 40)
 b4 = Book(4, "CS4", "Zannatul", "CSE", 50)
-
-admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
-m1 = User(2, "Munna", "Munna@gmail.com", "Munna127")
-m2 = User(3, "Biplob", "Biplob@gmail.com", "Biplob127")
-m1.register()
-print(m1.verify("Munna@gmail.com", "Munna127"))
-
+admin = Admin("Sabbir", "sabbir@gmail.com", "sabbir123")
+admin.register()
 admin.add_book(b1)
 admin.add_book(b2)
-admin.add_book(b3)
-admin.add_book(b4)
 
-admin.show_books()
-
+# admin = Admin(1, "Sabbir", "Sabbir@gmail.com", "Sabbir127")
+m1 = User("Munna", "Munna@gmail.com", "Munna127")
+m2 = User("Biplob", "Biplob@gmail.com", "Biplob127")
 admin.add_member(m1)
 admin.add_member(m2)
 
-admin.show_members()
-m1.borrow_book(1, "---")
-m1.borrow_book(2, "---")
-m1.borrow_book(3, "---")
-m2.borrow_book(1, "---")
 library = Library()
+library.show_all_members()
 
-library.show_most_borrowed_books()
-library.show_most_active_user()
-library.total_no_books()
-library.total_no_users()
+m1.borrow_book(1,)
+# m1.register()
+# print(m1.verify("Munna@gmail.com", "Munna127"))
+
+# admin.add_book(b1)
+# admin.add_book(b2)
+# admin.add_book(b3)
+# admin.add_book(b4)
+
+# admin.show_books()
+
+# admin.add_member(m1)
+# admin.add_member(m2)
+
+# admin.show_members()
+# m1.borrow_book(1, "---")
+# m1.borrow_book(2, "---")
+# m1.borrow_book(3, "---")
+# m2.borrow_book(1, "---")
+# library = Library()
+
+# library.show_most_borrowed_books()
+# library.show_most_active_user()
+# library.total_no_books()
+# library.total_no_users()
 
 
 # admin.update_book(1,"DS")

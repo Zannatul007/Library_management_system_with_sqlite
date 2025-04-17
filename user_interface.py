@@ -7,12 +7,11 @@ while True:
     print("4: Exit")
     choice = int(input("Select your choice: "))
     if choice == 1:
-        u_id = input("Enter your id: ")
         name = input("Enter your name: ")
         email = input("Enter your email: ")
         password = input("Enter your password: ")
 
-        user = User(u_id, name, email, password)
+        user = User( name, email, password)
         if user.verify(email, password):
             while True:
                 print("1: Borrow book")
@@ -41,12 +40,12 @@ while True:
             print("Incorrect password or email!!")
 
     elif choice == 2:
-        u_id = input("Enter your id: ")
+
         name = input("Enter your name: ")
         email = input("Enter your email: ")
         password = input("Enter your password: ")
 
-        admin = Admin(u_id, name, email, password)
+        admin = Admin(name, email, password)
         if admin.verify(email, password):
 
             library = Library()
@@ -80,10 +79,12 @@ while True:
                     admin.add_book(book)
                 elif admin_choice == 2:
                     print("REMOVING BOOK")
+                    load_books()
                     book_isbn = int(input("Enter a book isbn: "))
                     admin.delete_book(book_isbn)
                 elif admin_choice == 3:
                     print("UPDATING BOOK")
+                    load_books()
                     book_isbn = int(input("Enter a book isbn: "))
                     title = input("Press enter or type title: ")
                     copies = input("Press enter or no of copies: ")
@@ -109,11 +110,13 @@ while True:
                     admin.add_member(user)
 
                 elif admin_choice == 6:
+                    load_members()
                     print("REMOVING MEMBER")
                     u_id = input("Enter user id: ")
                     admin.delete_member(u_id)
 
                 elif admin_choice == 7:
+                    load_members()
                     print("UPDATING MEMBER")
                     u_id = input("Enter user id: ")
                     name = input("Enter press or type user name: ")
@@ -123,6 +126,7 @@ while True:
                     print("GENERATING REPORT")
                     library.usage_report()
                 elif admin_choice == 9:
+                    
                     print("ALL BOOKS")
                     library.show_all_books()
                 elif admin_choice == 10:
@@ -134,12 +138,12 @@ while True:
             print("Incorrect password or email!!")
 
     elif choice == 3:
-        u_id = input("Enter your id: ")
+        
         name = input("Enter your name: ")
         email = input("Enter your email: ")
         password = input("Enter your password: ")
         role = input("Enter the role Member/Admin: ")
-        user = User(u_id, name, email, password, role)
+        user = User( name, email, password, role)
         user.register()
     else:
         break
