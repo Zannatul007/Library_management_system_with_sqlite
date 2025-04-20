@@ -29,9 +29,6 @@ with database:
         )
         print(Admin(name, email, password, "Admin"))
         print("Default admin created")
-    else:
-
-        print("Admin is already exist")
 
 
 def login():

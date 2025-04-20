@@ -43,18 +43,28 @@ class BookStatus(Enum):
     not_available = "Not available"
 
 
+with database:
+    c.execute("SELECT MAX(isbn) from books")
+    max_isbn = c.fetchone()[0]
+
+
 class Book:
-    def __init__(self, isbn: int, title, author, genre, no_copies: int):
-        self.isbn = isbn
+    if max_isbn is None:
+        counter = 0
+    else:
+        counter = max_isbn
+
+    def __init__(self, title, author, genre, no_copies: int):
+        Book.counter += 1
+        self.isbn = Book.counter
         self.title = title
         self.author = author
         self.genre = genre
         self.copies = no_copies
-        self.status = BookStatus.available.value
 
     def __str__(self):
-        return " ISBN: {}\n Title: {}\n Author: {}\n Genre: {}\n Copies: {}\n Status: {}".format(
-            self.isbn, self.title, self.author, self.genre, self.copies, self.status
+        return " Title: {}\n Author: {}\n Genre: {}\n Copies: {}".format(
+            self.title, self.author, self.genre, self.copies
         )
 
 
@@ -80,7 +90,7 @@ class User:
             book = c.fetchone()
             if book:
                 c.execute(
-                    "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_email = :member_email)",
+                    "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_email = :member_email",
                     {"book_isbn": isbn, "member_email": self.email},
                 )
                 row = c.fetchone()
@@ -150,6 +160,9 @@ class User:
                     },
                 )
                 print("Book is successfully returned by {}".format(self.name))
+
+            else:
+                print("This book has already been returned or was never borrowed.")
 
     def show_books_transaction(self):
         with database:
@@ -234,34 +247,29 @@ class Admin(User):
             else:
                 print("Book doesn't exist in the library!")
 
-    def search_book(self, isbn=None, title=None, author=None):
-
-        if isbn:
-            with database:
-                c.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn})
-            print("Book details of ISBN {}".format(isbn))
-            isbn, title, author, genre, copies, status = c.fetchone()
-            new_book = Book(isbn, title, author, genre, copies)
-            print(new_book)
+    def search_book(self, title=None):
 
         if title:
             with database:
                 c.execute("SELECT * FROM books WHERE title = :title", {"title": title})
             print("Book details of title {}".format(title))
             isbn, title, author, genre, copies, status = c.fetchone()
-            new_book = Book(isbn, title, author, genre, copies)
+            print(" BooK ISBN: {}".format(isbn))
+            new_book = Book(title, author, genre, copies)
+            print(" Status: {}".format(status))
             print(new_book)
-        if author:
-            with database:
-                c.execute(
-                    "SELECT * FROM books WHERE author = :author", {"author": author}
-                )
-            print("All books of author {}".format(author))
-            books = c.fetchall()
-            for book in books:
-                isbn, title, author, genre, copies, status = book
-                new_book = Book(isbn, title, author, genre, copies)
-                print(new_book)
+        # if author:
+        #     with database:
+        #         c.execute(
+        #             "SELECT * FROM books WHERE author = :author", {"author": author}
+        #         )
+        #     print("All books of author {}".format(author))
+        #     books = c.fetchall()
+        #     for book in books:
+        #         isbn, title, author, genre, copies, status = book
+        #         print(" BooK ISBN: {}".format(isbn))
+        #         new_book = Book(title, author, genre, copies)
+        #         print(" Status: {}".format(status))
 
     def show_books(self):
         with database:
@@ -373,8 +381,10 @@ def load_books():
         for book in books:
 
             isbn, title, author, genre, no_copies, status = book
-            new_book = Book(isbn, title, author, genre, no_copies)
+            new_book = Book(title, author, genre, no_copies)
+            print(" Book ISBN: {}".format(isbn))
             print(new_book)
+            print(" Status:{} ".format(status))
             print("-" * 20)
 
 

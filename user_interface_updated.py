@@ -1,11 +1,21 @@
 from library_management import *
 from auth import *
 
+
+def get_int():
+    while True:
+        try:
+            return int(input(("> ")))
+        except ValueError:
+            print("Not a valid number")
+
+
 while True:
     print("1. Login")
     print("2. Register")
     print("3. Exit")
-    ip = int(input("Select option: "))
+    print("Select option: ")
+    ip = get_int()
 
     if ip == 1:
         user = login()
@@ -28,28 +38,37 @@ while True:
                     print("10: Show member")
                     print("11: Logout")
 
-                    admin_choice = int(input("Select a number from 1 to 12:  "))
+                    print("Select a number from 1 to 12:  ")
+                    admin_choice = get_int()
 
                     if admin_choice == 1:
                         print("ADDING BOOK")
-                        book_isbn = int(input("Enter a book isbn: "))
+
                         book_title = input("Enter book title: ")
                         book_author = input("Enter book author: ")
                         book_genre = input("Enter book genre: ")
-                        book_copies = int(input("Enter no of copies: "))
-                        book = Book(
-                            book_isbn, book_title, book_author, book_genre, book_copies
-                        )
+                        print("Enter no of copies: ")
+                        book_copies = get_int()
+                        book = Book(book_title, book_author, book_genre, book_copies)
                         user.add_book(book)
                     elif admin_choice == 2:
                         print("REMOVING BOOK")
                         load_books()
-                        book_isbn = int(input("Enter a book isbn: "))
+                        print("Enter a book ISBN")
+                        print("Enter 0 for go back :")
+                        book_isbn = get_int()
+                        if book_isbn == 0:
+                            continue
+
                         user.delete_book(book_isbn)
                     elif admin_choice == 3:
                         print("UPDATING BOOK")
                         load_books()
-                        book_isbn = int(input("Enter a book isbn: "))
+                        print("Enter a book isbn: ")
+                        print("Enter 0 for go back")
+                        book_isbn = get_int()
+                        if book_isbn == 0:
+                            continue
                         title = input("Press enter or type title: ")
                         copies = input("Press enter or no of copies: ")
                         if copies != "":
@@ -57,12 +76,8 @@ while True:
                         user.update_book(book_isbn, title, copies)
                     elif admin_choice == 4:
                         print("SEARCHING BOOK")
-                        book_isbn = input("Press enter or type a book isbn: ")
                         title = input("Press enter or type title: ")
-                        author = input("Press enter or type author name: ")
-                        if book_isbn != "":
-                            book_isbn = int(book_isbn)
-                        user.search_book(book_isbn, title, author)
+                        user.search_book(title)
 
                     elif admin_choice == 5:
                         print("ADDING MEMBER")
@@ -71,13 +86,19 @@ while True:
                     elif admin_choice == 6:
                         load_members()
                         print("REMOVING MEMBER")
-                        u_id = input("Enter user id: ")
+                        print("Enter 0 for go back")
+                        print("Enter user id for removing member: ")
+                        u_id = get_int()
+                        if u_id == 0:
+                            continue
+
                         user.delete_member(u_id)
 
                     elif admin_choice == 7:
                         load_members()
                         print("UPDATING MEMBER")
-                        u_id = input("Enter user id: ")
+                        print("Enter user id: ")
+                        u_id = get_int()
                         name = input("Enter press or type user name: ")
                         email = input("Enter press or type user email: ")
                         user.update_member(u_id, name, email)
@@ -100,18 +121,21 @@ while True:
                     print("3: Show book transactions")
                     print("4: Logout")
 
-                    user_choice = int(input("Select your choice: "))
+                    print("Select your choice: ")
+                    user_choice = get_int()
 
                     if user_choice == 1:
                         load_books()
                         print("BORROWING BOOK")
-                        book_id = int(input("Enter book id you want to borrow: "))
+                        print("Enter book ISBN you want to borrow: ")
+                        book_id = get_int()
                         borrow_date = input("Enter borrow date: ")
                         user.borrow_book(book_id, borrow_date)
                     elif user_choice == 2:
                         user.show_books_transaction()
                         print("RETURNING BOOK")
-                        book_id = int(input("Enter book id you want to return: "))
+                        print("Enter book ISBN you want to return: ")
+                        book_id = get_int()
                         return_date = input("Enter return date: ")
                         user.return_book(book_id, return_date)
                     elif user_choice == 3:
