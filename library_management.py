@@ -2,6 +2,7 @@ import sqlite3
 from enum import Enum
 import argon2
 
+
 hasher = argon2.PasswordHasher()
 
 database = sqlite3.connect("library_management.sqlite")
@@ -17,21 +18,21 @@ c.execute(
 )
 c.execute(
     """CREATE TABLE IF NOT EXISTS members(
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     password TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
-    role TEXT NOT NULL)"""
+    admin BOOL)"""
 )
 c.execute(
     """CREATE TABLE IF NOT EXISTS borrowed_books(
     book_isbn INT NOT NULL,
-      member_id INT NOT NULL,
+      member_email TEXT NOT NULL,
       borrow_date TEXT,
       return_date TEXT,
       status TEXT NOT NULL,
       FOREIGN KEY (book_isbn) REFERENCES books(isbn),
-      FOREIGN KEY (member_id) REFERENCES members(id))"""
+      FOREIGN KEY (member_email) REFERENCES members(email))"""
 )
 
 
@@ -58,11 +59,9 @@ class Book:
 
 
 class User:
-    counter = 0
 
     def __init__(self, u_name, u_email, u_pass, u_role="Member"):
-        User.counter += 1
-        self.id = User.counter
+
         self.name = u_name
         self.email = u_email
         self.password = u_pass
@@ -74,50 +73,6 @@ class User:
             self.name, self.email, self.role
         )
 
-    # user registration and verification
-
-    def get_hash(self, password):
-        hashed_password = hasher.hash(password)
-        return hashed_password
-
-    def register(self):
-        with database:
-            c.execute("SELECT * FROM members WHERE email=:email", {"email": self.email})
-            row = c.fetchone()
-            if row:
-                print("You have already an account. Please login!")
-            else:
-                c.execute(
-                    "INSERT INTO members (id,name,email,password,role) VALUES (:id,:name,:email,:password,:role)",
-                    {
-                        "id": self.id,
-                        "name": self.name,
-                        "email": self.email,
-                        "password": self.get_hash(self.password),
-                        "role": self.role,
-                    },
-                )
-                print("Registration is successful. Now you can log in to your account!")
-
-    def verify(self, email, password):
-        with database:
-            c.execute(
-                "SELECT password FROM members WHERE email =:email",
-                {"email": self.email},
-            )
-            db_password = c.fetchone()[0]
-
-            try:
-                hasher.verify(db_password, password)
-                return True
-            except (
-                argon2.exceptions.VerifyMismatchError
-                or argon2.exceptions.InvalidHashError
-            ):
-                return False
-
-    # user borrow and return book management
-
     def borrow_book(self, isbn, borrow_date):
 
         with database:
@@ -125,12 +80,12 @@ class User:
             book = c.fetchone()
             if book:
                 c.execute(
-                    "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id",
-                    {"book_isbn": isbn, "member_id": self.id},
+                    "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_email = :member_email)",
+                    {"book_isbn": isbn, "member_email": self.email},
                 )
                 row = c.fetchone()
                 if row:
-                    print("The book is already borrowed by {}".format(self.name))
+                    print("The book is already borrowed")
                 else:
 
                     c.execute(
@@ -139,21 +94,30 @@ class User:
                     row1 = c.fetchone()
                     copies = row1[0]
                     if copies > 0:
+                        new_copies = copies - 1
                         c.execute(
                             "UPDATE books SET copies=:copies WHERE isbn =:isbn",
-                            {"copies": copies - 1, "isbn": isbn},
+                            {"copies": new_copies, "isbn": isbn},
                         )
                         c.execute(
-                            "INSERT INTO borrowed_books (book_isbn,member_id,borrow_date,status) VALUES (:book_isbn,:member_id,:borrow_date,:status)",
+                            "INSERT INTO borrowed_books (book_isbn,member_email,borrow_date,status) VALUES (:book_isbn,:member_email,:borrow_date,:status)",
                             {
                                 "book_isbn": isbn,
-                                "member_id": self.id,
+                                "member_email": self.email,
                                 "borrow_date": borrow_date,
                                 "status": BookStatus.reserved.value,
                             },
                         )
-                        print("Book is successfully borrowed by {}".format(self.name))
+                        print("Book is successfully borrowed")
                     else:
+                        c.execute(
+                            "UPDATE books SET status = :status WHERE isbn = :book_isbn",
+                            {
+                                "status": BookStatus.not_available.value,
+                                "book_isbn": isbn,
+                            },
+                        )
+                        print(c.fetchone())
                         print("There are no available copies of this book!")
             else:
                 print("Book doesn't exist in the library!")
@@ -161,10 +125,10 @@ class User:
     def return_book(self, isbn, return_date):
         with database:
             c.execute(
-                "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_id = :member_id AND status =:status",
+                "SELECT * FROM borrowed_books WHERE book_isbn = :book_isbn AND member_email = :member_email AND status =:status",
                 {
                     "book_isbn": isbn,
-                    "member_id": self.id,
+                    "member_email": self.email,
                     "status": BookStatus.reserved.value,
                 },
             )
@@ -177,12 +141,12 @@ class User:
                     {"copies": copies + 1, "isbn": isbn},
                 )
                 c.execute(
-                    "UPDATE borrowed_books SET return_date = :return_date,status =:status WHERE book_isbn = :book_isbn AND member_id = :member_id",
+                    "UPDATE borrowed_books SET return_date = :return_date,status =:status WHERE book_isbn = :book_isbn AND member_email = :member_email",
                     {
                         "return_date": return_date,
                         "status": BookStatus.returned.value,
                         "book_isbn": isbn,
-                        "member_id": self.id,
+                        "member_email": self.email,
                     },
                 )
                 print("Book is successfully returned by {}".format(self.name))
@@ -190,10 +154,17 @@ class User:
     def show_books_transaction(self):
         with database:
             c.execute(
-                "SELECT * FROM borrowed_books WHERE member_id = :member_id",
-                {"member_id": self.id},
+                "SELECT * FROM borrowed_books WHERE member_email = :member_email",
+                {"member_email": self.email},
             )
-        print(c.fetchall())
+            books = c.fetchall()
+            for book in books:
+                isbn, email, b_date, r_date, status = book
+                print(
+                    "ISBN: {}\nBorrow Date: {}\nReturn Date: {}\nStatus: {}\n".format(
+                        isbn, b_date, r_date, status
+                    )
+                )
 
 
 class Admin(User):
@@ -219,7 +190,7 @@ class Admin(User):
                         "author": book.author,
                         "genre": book.genre,
                         "copies": book.copies,
-                        "status": book.status,
+                        "status": BookStatus.available.value,
                     },
                 )
                 print("Book is successfully added to the library!")
@@ -298,30 +269,10 @@ class Admin(User):
         print(c.fetchall())
 
     # Member management
-    def add_member(self, user):
-        with database:
-            c.execute(
-                "SELECT * FROM members WHERE  email =:email",
-                {"email": user.email},
-            )
-            row = c.fetchone()
-            if row:
-                print("User already exists in the library")
-            else:
-                c.execute(
-                    "INSERT INTO members (id,name,email,password,role) VALUES(:id,:name,:email,:password,:role)",
-                    {
-                        "id": user.id,
-                        "name": user.name,
-                        "email": user.email,
-                        "password": user.get_hash(user.password),
-                        "role": user.role,
-                    },
-                )
-                print("User is successfully added to the library!")
+    # def add_member(self):
 
     def update_member(self, u_id, name=None, email=None, password=None):
-
+        load_members()
         with database:
             c.execute("SELECT * FROM members WHERE id =:id", {"id": u_id})
             row = c.fetchone()
@@ -386,11 +337,11 @@ class Library:
     def show_most_active_user(self):
         with database:
             c.execute(
-                "SELECT members.name,members.id,members.email,COUNT(borrowed_books.member_id) as active_user_counter"
+                "SELECT members.name,members.email,COUNT(borrowed_books.member_email) as active_user_counter"
                 " FROM members"
                 " LEFT JOIN borrowed_books"
-                " ON members.id = borrowed_books.member_id"
-                " GROUP BY members.id"
+                " ON members.email = borrowed_books.member_email"
+                " GROUP BY members.email"
                 " ORDER BY active_user_counter DESC LIMIT 1"
             )
 
@@ -420,7 +371,7 @@ def load_books():
         print("-" * 20)
         books = c.fetchall()
         for book in books:
-            print(book)
+
             isbn, title, author, genre, no_copies, status = book
             new_book = Book(isbn, title, author, genre, no_copies)
             print(new_book)
@@ -434,6 +385,10 @@ def load_members():
         members = c.fetchall()
         for member in members:
             m_id, password, name, email, role = member
+            if role:
+                role = "Admin"
+            else:
+                role = "Member"
             new_member = User(name, email, password, role)
             print(" User id: {}".format(m_id))
             print(new_member)
@@ -443,16 +398,16 @@ def load_members():
 def load_borrowed_books():
     with database:
         c.execute(
-            """SELECT books.isbn, books.title, books.copies,borrowed_books.member_id, members.name
+            """SELECT books.isbn, books.title, books.copies,borrowed_books.member_email, members.name
                FROM borrowed_books
                LEFT JOIN books ON books.isbn = borrowed_books.book_isbn
-               LEFT JOIN members ON members.id = borrowed_books.member_id"""
+               LEFT JOIN members ON members.email = borrowed_books.member_email"""
         )
         borrowed_books = c.fetchall()
         print("-" * 20)
         for book in borrowed_books:
             print(
-                " Book ISBN: {}\n Title: {}\n Available copies: {}\n Borrowed By: {} (ID: {})".format(
+                " Book ISBN: {}\n Title: {}\n Available copies: {}\n Borrowed By: {} (email: {})".format(
                     book[0], book[1], book[2], book[4], book[3]
                 )
             )

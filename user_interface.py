@@ -1,4 +1,5 @@
 from library_management import *
+from auth import *
 
 while True:
     print("1: Login as a user")
@@ -7,12 +8,8 @@ while True:
     print("4: Exit")
     choice = int(input("Select your choice: "))
     if choice == 1:
-        name = input("Enter your name: ")
-        email = input("Enter your email: ")
-        password = input("Enter your password: ")
-
-        user = User(name, email, password)
-        if user.verify(email, password):
+        user = login()
+        if user:
             while True:
                 print("1: Borrow book")
                 print("2: Return book")
@@ -36,18 +33,10 @@ while True:
                     user.show_books_transaction()
                 elif user_choice == 4:
                     break
-        else:
-            print("Incorrect password or email!!")
 
     elif choice == 2:
-
-        name = input("Enter your name: ")
-        email = input("Enter your email: ")
-        password = input("Enter your password: ")
-
-        admin = Admin(name, email, password)
-        if admin.verify(email, password):
-
+        admin = login()
+        if admin:
             library = Library()
             print("-----Welcome to the Library-----")
             while True:
@@ -102,10 +91,7 @@ while True:
 
                 elif admin_choice == 5:
                     print("ADDING MEMBER")
-                    name = input("Enter user name: ")
-                    email = input("Enter user email: ")
-                    password = input("Enter user password: ")
-                    user = User(name, email, password)
+                    user = register()
                     admin.add_member(user)
 
                 elif admin_choice == 6:
@@ -132,15 +118,8 @@ while True:
                     library.show_all_members()
                 else:
                     break
-        else:
-            print("Incorrect password or email!!")
 
     elif choice == 3:
-
-        name = input("Enter your name: ")
-        email = input("Enter your email: ")
-        password = input("Enter your password: ")
-        user = User(name, email, password)
-        user.register()
+        user = register()
     else:
         break

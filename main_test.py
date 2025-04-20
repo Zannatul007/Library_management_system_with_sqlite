@@ -1,5 +1,5 @@
 from library_management import *
-
+from auth import *
 
 # b1 = Book(1, "CS", "Zannatul", "CSE", 20)
 # print(b1)
@@ -130,3 +130,22 @@ from library_management import *
 # # hasher.verify(hashed_password,new_pass)
 # # print("pass word correct")
 # load_books()
+
+while True:
+    print("1. Register")
+    print("2. Login")
+    print("3. Exit")
+
+    ip = int(input("Select option :"))
+    if ip == 1:
+        user = register()
+        print(user)
+    if ip == 2:
+        user = login()
+        if user.role == "Member":
+            user.borrow_book()
+        print(user)
+    if ip == 3:
+        break
+
+load_members()
