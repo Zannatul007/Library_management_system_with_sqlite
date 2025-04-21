@@ -1,5 +1,6 @@
 from library_management import *
 from auth import *
+import datetime
 
 
 def get_int():
@@ -8,6 +9,21 @@ def get_int():
             return int(input(("> ")))
         except ValueError:
             print("Not a valid number")
+
+
+def take_date(date):
+    format = "%Y-%m-%d"
+    x = datetime.datetime.strptime(date, format)
+    return x
+
+
+def get_date():
+    while True:
+        try:
+            date = input()
+            return take_date(date)
+        except ValueError:
+            print("Invalid format of time")
 
 
 while True:
@@ -74,6 +90,7 @@ while True:
                         if copies != "":
                             copies = int(copies)
                         user.update_book(book_isbn, title, copies)
+                        print("Updation is successful")
                     elif admin_choice == 4:
                         print("SEARCHING BOOK")
                         title = input("Press enter or type title: ")
@@ -129,14 +146,15 @@ while True:
                         print("BORROWING BOOK")
                         print("Enter book ISBN you want to borrow: ")
                         book_id = get_int()
-                        borrow_date = input("Enter borrow date: ")
+                        print("Enter borrow date(YYYY-MM-DD): ")
+                        borrow_date = get_date()
                         user.borrow_book(book_id, borrow_date)
                     elif user_choice == 2:
                         user.show_books_transaction()
                         print("RETURNING BOOK")
                         print("Enter book ISBN you want to return: ")
                         book_id = get_int()
-                        return_date = input("Enter return date: ")
+                        return_date = datetime.datetime.now()
                         user.return_book(book_id, return_date)
                     elif user_choice == 3:
                         print("SHOW ALL TRANSACTIONS")

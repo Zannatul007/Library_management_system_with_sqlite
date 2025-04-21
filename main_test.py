@@ -131,21 +131,32 @@ from auth import *
 # # print("pass word correct")
 # load_books()
 
-while True:
-    print("1. Register")
-    print("2. Login")
-    print("3. Exit")
+# while True:
+#     print("1. Register")
+#     print("2. Login")
+#     print("3. Exit")
 
-    ip = int(input("Select option :"))
-    if ip == 1:
-        user = register()
-        print(user)
-    if ip == 2:
-        user = login()
-        if user.role == "Member":
-            user.borrow_book()
-        print(user)
-    if ip == 3:
-        break
+#     ip = int(input("Select option :"))
+#     if ip == 1:
+#         user = register()
+#         print(user)
+#     if ip == 2:
+#         user = login()
+#         if user.role == "Member":
+#             user.borrow_book()
+#         print(user)
+#     if ip == 3:
+#
+#      break
 
-load_members()
+import datetime
+
+
+def take_date(date):
+    format = "%Y-%m-%d"
+    x = datetime.datetime.strptime(date, format)
+    return x
+
+
+date = input("YYYY-MM-DD : ")
+print(take_date(date))

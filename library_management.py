@@ -236,7 +236,7 @@ class Admin(User):
 
         with database:
             c.execute(
-                "SELECT * FROM books WHERE  isbn =:isbn",
+                "SELECT * FROM books WHERE  isbn =:isbn ",
                 {"isbn": isbn},
             )
             row = c.fetchone()
@@ -247,17 +247,19 @@ class Admin(User):
             else:
                 print("Book doesn't exist in the library!")
 
-    def search_book(self, title=None):
-
-        if title:
-            with database:
-                c.execute("SELECT * FROM books WHERE title = :title", {"title": title})
-            print("Book details of title {}".format(title))
-            isbn, title, author, genre, copies, status = c.fetchone()
-            print(" BooK ISBN: {}".format(isbn))
-            new_book = Book(title, author, genre, copies)
-            print(" Status: {}".format(status))
-            print(new_book)
+    def search_book(self, title):
+        with database:
+            c.execute("SELECT * FROM books WHERE title = :title", {"title": title})
+            book = c.fetchone()
+            if book is None:
+                print("No book exist")
+            else:
+                print("Book details of title {}".format(title))
+                isbn, title, author, genre, copies, status = book
+                print(" BooK ISBN: {}".format(isbn))
+                new_book = Book(title, author, genre, copies)
+                print(" Status: {}".format(status))
+                print(new_book)
         # if author:
         #     with database:
         #         c.execute(
@@ -309,7 +311,10 @@ class Admin(User):
     def delete_member(self, u_id):
         load_members()
         with database:
-            c.execute("SELECT * FROM members WHERE id =:id", {"id": u_id})
+            c.execute(
+                "SELECT * FROM members WHERE id =:id AND admin=:admin",
+                {"id": u_id, "admin": 0},
+            )
             row = c.fetchone()
             if row:
                 c.execute("DELETE FROM members WHERE id = :id", {"id": u_id})
