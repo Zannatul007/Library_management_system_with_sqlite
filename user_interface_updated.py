@@ -54,7 +54,7 @@ while True:
                     print("10: Show member")
                     print("11: Logout")
 
-                    print("Select a number from 1 to 12:  ")
+                    print("Select a number from 1 to 11:  ")
                     admin_choice = get_int()
 
                     if admin_choice == 1:
